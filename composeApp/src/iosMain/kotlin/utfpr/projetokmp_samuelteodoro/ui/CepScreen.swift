@@ -37,34 +37,59 @@ struct CepScreen: View {
                         }
                     }
                     
-                    Button(action: {
-                        Task {
-                            do {
-                                try await viewModel.buscarCep()
-                            } catch {
-                                errorMessage = error.localizedDescription
-                                showError = true
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            Task {
+                                do {
+                                    try await viewModel.buscarCep()
+                                } catch {
+                                    when {
+                                        error.localizedDescription.contains("CEP não encontrado") -> errorMessage = "CEP não encontrado"
+                                        error.localizedDescription.contains("CEP inválido") -> errorMessage = "CEP inválido"
+                                        error.localizedDescription.contains("Illegal") -> errorMessage = "CEP inválido"
+                                        error.localizedDescription.contains("JSON") -> errorMessage = "CEP inválido"
+                                        else -> errorMessage = "Erro ao buscar CEP"
+                                    }
+                                    showError = true
+                                }
+                            }
+                        }) {
+                            if viewModel.uiState.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Text("Buscar")
+                                    .fontWeight(.semibold)
                             }
                         }
-                    }) {
-                        if viewModel.uiState.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Text("Buscar")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            viewModel.uiState.isSearchEnabled && !viewModel.uiState.isLoading ?
+                            Color(hex: "009C3B") : Color(hex: "009C3B").opacity(0.6)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .disabled(!viewModel.uiState.isSearchEnabled || viewModel.uiState.isLoading)
+                        .shadow(radius: 6)
+                        
+                        Button(action: {
+                            viewModel.limparBusca()
+                        }) {
+                            Text("Limpar")
                                 .fontWeight(.semibold)
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            viewModel.uiState.cepInfo != nil ?
+                            Color(hex: "FFDF00") : Color(hex: "FFDF00").opacity(0.6)
+                        )
+                        .foregroundColor(Color(hex: "002776"))
+                        .cornerRadius(8)
+                        .disabled(viewModel.uiState.cepInfo == nil)
+                        .shadow(radius: 6)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        viewModel.uiState.isSearchEnabled && !viewModel.uiState.isLoading ?
-                        Color(hex: "009C3B") : Color(hex: "009C3B").opacity(0.6)
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .disabled(!viewModel.uiState.isSearchEnabled || viewModel.uiState.isLoading)
-                    .shadow(radius: 6)
                     
                     if let cepInfo = viewModel.uiState.cepInfo {
                         VStack(spacing: 12) {
@@ -88,7 +113,7 @@ struct CepScreen: View {
                 .padding()
             }
             .background(Color(hex: "F5F5F5"))
-            .alert("Erro", isPresented: $showError) {
+            .alert("Atenção", isPresented: $showError) {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(errorMessage)

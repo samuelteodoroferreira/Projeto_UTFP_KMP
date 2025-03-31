@@ -19,7 +19,25 @@ class CepViewModel {
         )
     }
     
+    fun limparBusca() {
+        _uiState.value = _uiState.value.copy(
+            cep = "",
+            cepInfo = null,
+            error = null,
+            isSearchEnabled = false
+        )
+    }
+    
     suspend fun buscarCep() {
+        if (_uiState.value.cep.length != 8 || !_uiState.value.cep.all { it.isDigit() }) {
+            _uiState.value = _uiState.value.copy(
+                error = "CEP inválido",
+                isLoading = false,
+                isInputEnabled = true
+            )
+            return
+        }
+        
         _uiState.value = _uiState.value.copy(
             isLoading = true,
             isInputEnabled = false,

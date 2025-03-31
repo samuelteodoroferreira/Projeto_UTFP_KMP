@@ -33,7 +33,10 @@ fun CepScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
-            snackbarHostState.showSnackbar(error)
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
         }
     }
 
@@ -78,28 +81,51 @@ fun CepScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            ElevatedButton(
-                onClick = { scope.launch { viewModel.buscarCep() } },
-                enabled = uiState.isSearchEnabled && !uiState.isLoading,
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = BrazilGreen,
-                    contentColor = BackgroundLight,
-                    disabledContainerColor = BrazilGreenLight.copy(alpha = 0.6f)
-                ),
-                elevation = ButtonDefaults.elevatedButtonElevation(
-                    defaultElevation = 6.dp,
-                    pressedElevation = 8.dp,
-                    disabledElevation = 0.dp
-                ),
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        color = BackgroundLight,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Text("Buscar")
+                ElevatedButton(
+                    onClick = { scope.launch { viewModel.buscarCep() } },
+                    enabled = uiState.isSearchEnabled && !uiState.isLoading,
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = BrazilGreen,
+                        contentColor = BackgroundLight,
+                        disabledContainerColor = BrazilGreenLight.copy(alpha = 0.6f)
+                    ),
+                    elevation = ButtonDefaults.elevatedButtonElevation(
+                        defaultElevation = 6.dp,
+                        pressedElevation = 8.dp,
+                        disabledElevation = 0.dp
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            color = BackgroundLight,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Text("Buscar")
+                    }
+                }
+
+                ElevatedButton(
+                    onClick = { viewModel.limparBusca() },
+                    enabled = uiState.cepInfo != null,
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = BrazilYellow,
+                        contentColor = BrazilBlue,
+                        disabledContainerColor = BrazilYellowLight.copy(alpha = 0.6f)
+                    ),
+                    elevation = ButtonDefaults.elevatedButtonElevation(
+                        defaultElevation = 6.dp,
+                        pressedElevation = 8.dp,
+                        disabledElevation = 0.dp
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Limpar")
                 }
             }
 

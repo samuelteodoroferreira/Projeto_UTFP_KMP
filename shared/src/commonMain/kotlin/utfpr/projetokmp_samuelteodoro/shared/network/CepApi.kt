@@ -23,13 +23,19 @@ class CepApi {
             val response = httpClient.get("https://viacep.com.br/ws/$cep/json/")
             val cepInfo = response.body<CepInfo>()
             
-            if (cepInfo.erro) {
-                Result.failure(Exception("CEP não encontrado"))
-            } else {
-                Result.success(cepInfo)
+            when {
+                cepInfo.erro -> Result.failure(Exception("CEP não encontrado"))
+                cepInfo.cep.isEmpty() -> Result.failure(Exception("CEP inválido"))
+                else -> Result.success(cepInfo)
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            when {
+                e.message?.contains("404") == true -> Result.failure(Exception("CEP não encontrado"))
+                e.message?.contains("400") == true -> Result.failure(Exception("CEP inválido"))
+                e.message?.contains("Illegal") == true -> Result.failure(Exception("CEP inválido"))
+                e.message?.contains("JSON") == true -> Result.failure(Exception("CEP inválido"))
+                else -> Result.failure(Exception("Erro ao buscar CEP"))
+            }
         }
     }
 } 
